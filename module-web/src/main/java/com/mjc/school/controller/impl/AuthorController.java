@@ -30,6 +30,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Api(produces = "application/json", value = "Operations for creating, updating, retrieving and deleting authors in the application")
+@RequestMapping("/api/v1")
 public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, Long> {
     private BaseAuthorAndTagService<AuthorDTO, Long> service;
 

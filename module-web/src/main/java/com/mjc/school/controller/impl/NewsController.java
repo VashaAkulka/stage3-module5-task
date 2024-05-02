@@ -29,6 +29,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Api(produces = "application/json", value = "Operations for creating, updating, retrieving and deleting news in the application")
+@RequestMapping("/api/v1")
 public class NewsController implements BaseNewsController<NewsDTO, Long> {
     private BaseNewsService<NewsDTO, Long> service;
 

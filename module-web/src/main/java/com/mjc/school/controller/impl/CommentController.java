@@ -23,12 +23,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ResourceBundle;
 
 @RestController
 @AllArgsConstructor
 @Api(produces = "application/json", value = "Operations for creating, updating, retrieving and deleting comment in the application")
+@RequestMapping("/api/v1")
 public class CommentController implements BaseExtendController<CommentDTO, Long> {
     private BaseExtendService<CommentDTO, Long> service;
+
 
     @Override
     @ApiOperation("Read comment by news id")
