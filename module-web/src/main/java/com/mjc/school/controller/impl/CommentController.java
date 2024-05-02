@@ -35,7 +35,6 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the comments"),
             @ApiResponse(code = 204, message = "No comments found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
@@ -50,16 +49,19 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
 
 
 
+
+
+
+
     @Override
     @ApiOperation("Read all comments")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the comments"),
             @ApiResponse(code = 204, message = "No comments found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/comment/all")
+    @GetMapping("/comments/all")
     public ResponseEntity<PagedModel<CommentDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
 
         List<CommentDTO> commentDTOList = service.readAll();

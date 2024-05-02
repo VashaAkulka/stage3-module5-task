@@ -38,7 +38,6 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the authors"),
             @ApiResponse(code = 204, message = "No authors found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
@@ -51,16 +50,19 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
 
 
 
+
+
+
+
     @Override
-    @ApiOperation("Read author by part name")
+    @ApiOperation("Read authors by part name")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the authors"),
             @ApiResponse(code = 204, message = "No authors found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/author/search")
+    @GetMapping("/authors/search")
     public ResponseEntity<List<AuthorDTO>> readByPartName(@RequestParam("name") String name) {
         List<AuthorDTO> authorDTOList = service.readByPartName(name);
         if (authorDTOList.isEmpty()) return ResponseEntity.noContent().build();
@@ -69,24 +71,27 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
 
 
 
+
+
+
+
     @Override
     @ApiOperation("Read all authors")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the authors"),
             @ApiResponse(code = 204, message = "No authors found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/author/all")
+    @GetMapping("/authors/all")
     public ResponseEntity<PagedModel<AuthorDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
 
         List<AuthorDTO> authorDTOList = service.readAll();
         if (authorDTOList.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null || pages.getSortBy() == null) {
-                return ResponseEntity.ok(PagedModel.of(authorDTOList, new PagedModel.PageMetadata(0, 1, authorDTOList.size())));
+            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null) {
+                return ResponseEntity.ok(PagedModel.of(authorDTOList, new PagedModel.PageMetadata(authorDTOList.size(), 1, authorDTOList.size())));
             }
 
             int startIndex = (pages.getPage() - 1) * pages.getLimit();
@@ -104,12 +109,12 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
             PagedModel<AuthorDTO> pagedModel = PagedModel.of(paginatedAuthorDTOList, metadata);
 
             if (endIndex < authorDTOList.size()) {
-                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
+                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort());
                 pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
             }
 
             if (startIndex > 0) {
-                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
+                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort());
                 pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
             }
 

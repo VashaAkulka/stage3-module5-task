@@ -38,7 +38,6 @@ public class TagController implements BaseAuthorAndTagController<TagDTO, Long> {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the tags"),
             @ApiResponse(code = 204, message = "No tags found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
@@ -51,16 +50,19 @@ public class TagController implements BaseAuthorAndTagController<TagDTO, Long> {
 
 
 
+
+
+
+
     @Override
     @ApiOperation("Read tags by part name")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the tags"),
             @ApiResponse(code = 204, message = "No tags found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/tag/search")
+    @GetMapping("/tags/search")
     public ResponseEntity<List<TagDTO>> readByPartName(String name) {
         List<TagDTO> tagDTOList = service.readByPartName(name);
         if (tagDTOList.isEmpty()) return ResponseEntity.noContent().build();
@@ -69,24 +71,27 @@ public class TagController implements BaseAuthorAndTagController<TagDTO, Long> {
 
 
 
+
+
+
+
     @Override
     @ApiOperation("Read all tags")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the tags"),
             @ApiResponse(code = 204, message = "No tags found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/tag/all")
+    @GetMapping("/tags/all")
     public ResponseEntity<PagedModel<TagDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
 
         List<TagDTO> tagDTOList = service.readAll();
         if (tagDTOList.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null || pages.getSortBy() == null) {
-                return ResponseEntity.ok(PagedModel.of(tagDTOList, new PagedModel.PageMetadata(0, 1, tagDTOList.size())));
+            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null) {
+                return ResponseEntity.ok(PagedModel.of(tagDTOList, new PagedModel.PageMetadata(tagDTOList.size(), 1, tagDTOList.size())));
             }
 
             int startIndex = (pages.getPage() - 1) * pages.getLimit();
@@ -104,12 +109,12 @@ public class TagController implements BaseAuthorAndTagController<TagDTO, Long> {
             PagedModel<TagDTO> pagedModel = PagedModel.of(paginatedTagDTOList, metadata);
 
             if (endIndex < tagDTOList.size()) {
-                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
+                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort());
                 pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
             }
 
             if (startIndex > 0) {
-                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
+                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort());
                 pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
             }
 

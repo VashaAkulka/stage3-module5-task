@@ -37,19 +37,17 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the news"),
             @ApiResponse(code = 204, message = "No news found"),
-            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/new/all")
+    @GetMapping("/news/all")
     public ResponseEntity<PagedModel<NewsDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
-
         List<NewsDTO> newsDTOList = service.readAll();
         if (newsDTOList.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
             if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null || pages.getSortBy() == null) {
-                return ResponseEntity.ok(PagedModel.of(newsDTOList, new PagedModel.PageMetadata(0, 1, newsDTOList.size())));
+                return ResponseEntity.ok(PagedModel.of(newsDTOList, new PagedModel.PageMetadata(newsDTOList.size(), 1, newsDTOList.size())));
             }
 
             int startIndex = (pages.getPage() - 1) * pages.getLimit();
@@ -83,6 +81,10 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
 
 
 
+
+
+
+
     @Override
     @ApiOperation("Read news by parameters")
     @ApiResponses(value = {
@@ -92,7 +94,7 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/new/search")
+    @GetMapping("/news/search")
     public ResponseEntity<List<NewsDTO>> readByParameters(@ModelAttribute SearchParameterForNewsDTO parameters) {
         List<NewsDTO> newsDTOList = service.readByParameters(parameters);
         if (newsDTOList.isEmpty())
@@ -115,7 +117,7 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/new/{id}")
+    @GetMapping("/news/{id}")
     public ResponseEntity<NewsDTO> readById(@PathVariable("id") Long id) throws NoSuchElementException {
         return ResponseEntity.ok(service.readById(id));
     }
@@ -135,7 +137,7 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @PostMapping("/new")
+    @PostMapping("/news")
     public ResponseEntity<NewsDTO> create(@RequestBody @Valid NewsDTO createRequest,
                                           BindingResult bindingResult) throws NoSuchElementException, ValidationException {
         if (bindingResult.hasErrors()) {
@@ -157,15 +159,15 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
 
 
     @Override
-    @ApiOperation("Update the tag")
+    @ApiOperation("Update the news")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully update the tag"),
+            @ApiResponse(code = 200, message = "Successfully update the news"),
             @ApiResponse(code = 400, message = "Invalid request parameters"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @PatchMapping("/new/{id}")
+    @PatchMapping("/news/{id}")
     public ResponseEntity<NewsDTO> update(@RequestBody @Valid NewsDTO updateRequest,
                                           @PathVariable("id") Long id,
                                           BindingResult bindingResult) throws ValidationException, NoSuchElementException {
@@ -193,7 +195,7 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @DeleteMapping("/new/{id}")
+    @DeleteMapping("/news/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable Long id) throws NoSuchElementException {
         if (!service.deleteById(id))
