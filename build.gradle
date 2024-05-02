@@ -42,8 +42,10 @@ subprojects {
         implementation "org.hibernate.orm:hibernate-core:$hibernateVersion"
         implementation "org.hibernate.validator:hibernate-validator:$hibernateValidator"
 
-        testImplementation 'org.assertj:assertj-core:3.25.3'
-        testImplementation 'com.h2database:h2:2.2.224'
+        testImplementation "org.assertj:assertj-core:3.25.3"
+        testImplementation "com.h2database:h2:2.2.224"
+        testImplementation "io.rest-assured:rest-assured:5.4.0"
+        implementation "com.google.code.gson:gson:2.10.1"
     }
     test {
         useJUnitPlatform()
