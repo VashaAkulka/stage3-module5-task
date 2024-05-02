@@ -42,10 +42,10 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
     }
     )
     @GetMapping("/news/{newsId}/authors")
-    public ResponseEntity<List<AuthorDTO>> readByNewsId(@PathVariable("newsId") Long id) {
+    public ResponseEntity<PagedModel<AuthorDTO>> readByNewsId(@PathVariable("newsId") Long id,
+                                                              @ModelAttribute PageInfoDTO pages) {
         List<AuthorDTO> authorDTOList = service.readByNewsId(id);
-        if (authorDTOList.isEmpty()) return ResponseEntity.noContent().build();
-        return ResponseEntity.ok().body(authorDTOList);
+        return pagination(authorDTOList, pages);
     }
 
 
@@ -63,10 +63,10 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
     }
     )
     @GetMapping("/authors/search")
-    public ResponseEntity<List<AuthorDTO>> readByPartName(@RequestParam("name") String name) {
+    public ResponseEntity<PagedModel<AuthorDTO>> readByPartName(@RequestParam("name") String name,
+                                                          @ModelAttribute PageInfoDTO pages) {
         List<AuthorDTO> authorDTOList = service.readByPartName(name);
-        if (authorDTOList.isEmpty()) return ResponseEntity.noContent().build();
-        return ResponseEntity.ok().body(authorDTOList);
+        return pagination(authorDTOList, pages);
     }
 
 
@@ -87,39 +87,7 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
     public ResponseEntity<PagedModel<AuthorDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
 
         List<AuthorDTO> authorDTOList = service.readAll();
-        if (authorDTOList.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        } else {
-            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null) {
-                return ResponseEntity.ok(PagedModel.of(authorDTOList, new PagedModel.PageMetadata(authorDTOList.size(), 1, authorDTOList.size())));
-            }
-
-            int startIndex = (pages.getPage() - 1) * pages.getLimit();
-            int endIndex = Math.min(startIndex + pages.getLimit(), authorDTOList.size());
-            List<AuthorDTO> paginatedAuthorDTOList = authorDTOList.subList(startIndex, endIndex);
-
-            if (pages.getSort().equals("asc")) {
-                paginatedAuthorDTOList.sort(Comparator.comparing(author -> service.getCountById(author.getId())));
-            } else if (pages.getSort().equals("desc")) {
-                paginatedAuthorDTOList.sort(Comparator.comparing(author -> service.getCountById(author.getId())));
-                Collections.reverse(paginatedAuthorDTOList);
-            }
-
-            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), authorDTOList.size());
-            PagedModel<AuthorDTO> pagedModel = PagedModel.of(paginatedAuthorDTOList, metadata);
-
-            if (endIndex < authorDTOList.size()) {
-                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort());
-                pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
-            }
-
-            if (startIndex > 0) {
-                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort());
-                pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
-            }
-
-            return ResponseEntity.ok(pagedModel);
-        }
+        return pagination(authorDTOList, pages);
     }
 
 
@@ -212,5 +180,46 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
     public void deleteById(@PathVariable("id") Long id) throws NoSuchElementException {
         if (!service.deleteById(id))
             throw new NoSuchElementException("No such author");
+    }
+
+
+
+
+
+    private ResponseEntity<PagedModel<AuthorDTO>> pagination(List<AuthorDTO> authorDTOList,
+                                                             PageInfoDTO pages) {
+        if (authorDTOList.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null) {
+                return ResponseEntity.ok(PagedModel.of(authorDTOList, new PagedModel.PageMetadata(authorDTOList.size(), 1, authorDTOList.size())));
+            }
+
+            int startIndex = (pages.getPage() - 1) * pages.getLimit();
+            int endIndex = Math.min(startIndex + pages.getLimit(), authorDTOList.size());
+            List<AuthorDTO> paginatedAuthorDTOList = authorDTOList.subList(startIndex, endIndex);
+
+            if (pages.getSort().equals("asc")) {
+                paginatedAuthorDTOList.sort(Comparator.comparing(author -> service.getCountById(author.getId())));
+            } else if (pages.getSort().equals("desc")) {
+                paginatedAuthorDTOList.sort(Comparator.comparing(author -> service.getCountById(author.getId())));
+                Collections.reverse(paginatedAuthorDTOList);
+            }
+
+            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), authorDTOList.size());
+            PagedModel<AuthorDTO> pagedModel = PagedModel.of(paginatedAuthorDTOList, metadata);
+
+            if (endIndex < authorDTOList.size()) {
+                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort());
+                pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
+            }
+
+            if (startIndex > 0) {
+                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort());
+                pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
+            }
+
+            return ResponseEntity.ok(pagedModel);
+        }
     }
 }

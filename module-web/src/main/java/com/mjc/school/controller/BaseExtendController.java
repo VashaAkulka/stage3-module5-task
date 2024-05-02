@@ -1,10 +1,9 @@
 package com.mjc.school.controller;
 
-import com.mjc.school.service.exception.NoSuchElementException;
+import com.mjc.school.service.dto.PageInfoDTO;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-
 public interface BaseExtendController<R, K> extends BaseController<R, K> {
-    ResponseEntity<List<R>> readByNewsId(K id);
+    ResponseEntity<PagedModel<R>> readByNewsId(K id, PageInfoDTO pages);
 }

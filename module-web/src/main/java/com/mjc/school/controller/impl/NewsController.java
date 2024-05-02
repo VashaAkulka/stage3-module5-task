@@ -43,39 +43,7 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
     @GetMapping("/news/all")
     public ResponseEntity<PagedModel<NewsDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
         List<NewsDTO> newsDTOList = service.readAll();
-        if (newsDTOList.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        } else {
-            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null || pages.getSortBy() == null) {
-                return ResponseEntity.ok(PagedModel.of(newsDTOList, new PagedModel.PageMetadata(newsDTOList.size(), 1, newsDTOList.size())));
-            }
-
-            int startIndex = (pages.getPage() - 1) * pages.getLimit();
-            int endIndex = Math.min(startIndex + pages.getLimit(), newsDTOList.size());
-            List<NewsDTO> paginatedNewsDTOList = newsDTOList.subList(startIndex, endIndex);
-
-            if (pages.getSortBy().equals("Created")) {
-                paginatedNewsDTOList.sort(Comparator.comparing(NewsDTO::getCreateDate));
-            } else if (pages.getSortBy().equals("Modified")) {
-                paginatedNewsDTOList.sort(Comparator.comparing(NewsDTO::getLastUpdateDate));
-            }
-            if (pages.getSort().equals("desc")) Collections.reverse(paginatedNewsDTOList);
-
-            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), newsDTOList.size());
-            PagedModel<NewsDTO> pagedModel = PagedModel.of(paginatedNewsDTOList, metadata);
-
-            if (endIndex < newsDTOList.size()) {
-                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
-                pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
-            }
-
-            if (startIndex > 0) {
-                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
-                pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
-            }
-
-            return ResponseEntity.ok(pagedModel);
-        }
+        return pagination(newsDTOList, pages);
     }
 
 
@@ -95,13 +63,10 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
     }
     )
     @GetMapping("/news/search")
-    public ResponseEntity<List<NewsDTO>> readByParameters(@ModelAttribute SearchParameterForNewsDTO parameters) {
+    public ResponseEntity<PagedModel<NewsDTO>> readByParameters(@ModelAttribute SearchParameterForNewsDTO parameters,
+                                                                @ModelAttribute PageInfoDTO pages) {
         List<NewsDTO> newsDTOList = service.readByParameters(parameters);
-        if (newsDTOList.isEmpty())
-            return ResponseEntity
-                .status(HttpStatus.NO_CONTENT).build();
-
-        return ResponseEntity.ok().body(newsDTOList);
+        return pagination(newsDTOList, pages);
     }
 
 
@@ -200,5 +165,46 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
     public void deleteById(@PathVariable Long id) throws NoSuchElementException {
         if (!service.deleteById(id))
             throw new NoSuchElementException("No such news");
+    }
+
+
+
+
+
+
+    private ResponseEntity<PagedModel<NewsDTO>> pagination(List<NewsDTO> newsDTOList, PageInfoDTO pages) {
+        if (newsDTOList.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null || pages.getSortBy() == null) {
+                return ResponseEntity.ok(PagedModel.of(newsDTOList, new PagedModel.PageMetadata(newsDTOList.size(), 1, newsDTOList.size())));
+            }
+
+            int startIndex = (pages.getPage() - 1) * pages.getLimit();
+            int endIndex = Math.min(startIndex + pages.getLimit(), newsDTOList.size());
+            List<NewsDTO> paginatedNewsDTOList = newsDTOList.subList(startIndex, endIndex);
+
+            if (pages.getSortBy().equals("Created")) {
+                paginatedNewsDTOList.sort(Comparator.comparing(NewsDTO::getCreateDate));
+            } else if (pages.getSortBy().equals("Modified")) {
+                paginatedNewsDTOList.sort(Comparator.comparing(NewsDTO::getLastUpdateDate));
+            }
+            if (pages.getSort().equals("desc")) Collections.reverse(paginatedNewsDTOList);
+
+            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), newsDTOList.size());
+            PagedModel<NewsDTO> pagedModel = PagedModel.of(paginatedNewsDTOList, metadata);
+
+            if (endIndex < newsDTOList.size()) {
+                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
+                pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
+            }
+
+            if (startIndex > 0) {
+                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
+                pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
+            }
+
+            return ResponseEntity.ok(pagedModel);
+        }
     }
 }
