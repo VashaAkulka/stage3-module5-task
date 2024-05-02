@@ -200,9 +200,9 @@ public class AuthorController implements BaseAuthorAndTagController<AuthorDTO, L
             int endIndex = Math.min(startIndex + pages.getLimit(), authorDTOList.size());
             List<AuthorDTO> paginatedAuthorDTOList = authorDTOList.subList(startIndex, endIndex);
 
-            if (pages.getSort().equals("asc")) {
+            if (pages.getSort().trim().equalsIgnoreCase("asc")) {
                 paginatedAuthorDTOList.sort(Comparator.comparing(author -> service.getCountById(author.getId())));
-            } else if (pages.getSort().equals("desc")) {
+            } else if (pages.getSort().trim().equalsIgnoreCase("desc")) {
                 paginatedAuthorDTOList.sort(Comparator.comparing(author -> service.getCountById(author.getId())));
                 Collections.reverse(paginatedAuthorDTOList);
             }

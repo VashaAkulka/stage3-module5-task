@@ -185,12 +185,12 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
             int endIndex = Math.min(startIndex + pages.getLimit(), newsDTOList.size());
             List<NewsDTO> paginatedNewsDTOList = newsDTOList.subList(startIndex, endIndex);
 
-            if (pages.getSortBy().equals("Created")) {
+            if (pages.getSortBy().trim().equalsIgnoreCase("Created")) {
                 paginatedNewsDTOList.sort(Comparator.comparing(NewsDTO::getCreateDate));
-            } else if (pages.getSortBy().equals("Modified")) {
+            } else if (pages.getSortBy().trim().equalsIgnoreCase("Modified")) {
                 paginatedNewsDTOList.sort(Comparator.comparing(NewsDTO::getLastUpdateDate));
             }
-            if (pages.getSort().equals("desc")) Collections.reverse(paginatedNewsDTOList);
+            if (pages.getSort().trim().equalsIgnoreCase("desc")) Collections.reverse(paginatedNewsDTOList);
 
             PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), newsDTOList.size());
             PagedModel<NewsDTO> pagedModel = PagedModel.of(paginatedNewsDTOList, metadata);

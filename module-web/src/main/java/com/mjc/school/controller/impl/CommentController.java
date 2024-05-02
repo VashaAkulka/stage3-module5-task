@@ -187,12 +187,12 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
             int endIndex = Math.min(startIndex + pages.getLimit(), commentDTOList.size());
             List<CommentDTO> paginatedCommentDTOList = commentDTOList.subList(startIndex, endIndex);
 
-            if (pages.getSortBy().equals("Created")) {
+            if (pages.getSortBy().trim().equalsIgnoreCase("created")) {
                 paginatedCommentDTOList.sort(Comparator.comparing(CommentDTO::getCreateDate));
-            } else if (pages.getSortBy().equals("Modified")) {
+            } else if (pages.getSortBy().trim().equalsIgnoreCase("modified")) {
                 paginatedCommentDTOList.sort(Comparator.comparing(CommentDTO::getLastUpdateDate));
             }
-            if (pages.getSort().equals("desc")) Collections.reverse(paginatedCommentDTOList);
+            if (pages.getSort().trim().equalsIgnoreCase("desc")) Collections.reverse(paginatedCommentDTOList);
 
             PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), commentDTOList.size());
             PagedModel<CommentDTO> pagedModel = PagedModel.of(paginatedCommentDTOList, metadata);

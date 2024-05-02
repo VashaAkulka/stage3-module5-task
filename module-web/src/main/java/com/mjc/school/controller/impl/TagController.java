@@ -208,9 +208,9 @@ public class TagController implements BaseAuthorAndTagController<TagDTO, Long> {
             int endIndex = Math.min(startIndex + pages.getLimit(), tagDTOList.size());
             List<TagDTO> paginatedTagDTOList = tagDTOList.subList(startIndex, endIndex);
 
-            if (pages.getSort().equals("asc")) {
+            if (pages.getSort().trim().equalsIgnoreCase("asc")) {
                 paginatedTagDTOList.sort(Comparator.comparing(tag -> service.getCountById(tag.getId())));
-            } else if (pages.getSort().equals("desc")) {
+            } else if (pages.getSort().trim().equalsIgnoreCase("desc")) {
                 paginatedTagDTOList.sort(Comparator.comparing(tag -> service.getCountById(tag.getId())));
                 Collections.reverse(paginatedTagDTOList);
             }
