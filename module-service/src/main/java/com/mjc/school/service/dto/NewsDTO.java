@@ -12,15 +12,12 @@ import java.util.Set;
 
 @Data
 public class NewsDTO {
-    @NotNull
     Long authorId;
 
-    @NotNull
     @Size(min = 5, max = 30)
     @UniqueElements
     String title;
 
-    @NotNull
     @Size(min = 5, max = 255)
     String content;
     Set<Long> tagsId = new HashSet<>();

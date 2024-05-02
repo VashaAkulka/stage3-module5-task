@@ -9,7 +9,6 @@ import java.util.Set;
 
 @Data
 public class AuthorDTO {
-    @NotNull
     @Size(min = 3, max = 15)
     @UniqueElements
     private String name;

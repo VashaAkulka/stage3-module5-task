@@ -10,7 +10,6 @@ import java.util.Set;
 
 @Data
 public class TagDTO {
-    @NotNull
     @Size(min = 3, max = 15)
     @UniqueElements
     private String name;

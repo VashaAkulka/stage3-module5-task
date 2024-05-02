@@ -7,6 +7,7 @@ import com.mjc.school.repository.model.TagModel;
 import com.mjc.school.service.BaseExtendService;
 import com.mjc.school.service.dto.TagDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
+import com.mjc.school.service.exception.ValidationException;
 import com.mjc.school.service.mapper.TagMapper;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -43,10 +44,10 @@ public class TagService implements BaseExtendService<TagDTO, Long> {
     }
 
     @Override
-    public TagDTO create(TagDTO createRequest) throws NoSuchElementException {
+    public TagDTO create(TagDTO createRequest) throws NoSuchElementException, ValidationException {
         TagModel tagModel = new TagModel();
-        tagModel.setCreateDate(LocalDateTime.now());
-        tagModel.setLastUpdateDate(LocalDateTime.now());
+        if (createRequest.getName() == null) throw new ValidationException("The fields should not be empty");
+
         tagModel.setName(createRequest.getName());
 
         Set<NewsModel> newsModelSet = new HashSet<>();
@@ -61,14 +62,15 @@ public class TagService implements BaseExtendService<TagDTO, Long> {
     @Override
     public TagDTO update(TagDTO updateRequest, Long id) throws NoSuchElementException {
         TagModel tagModel = repository.findById(id).orElseThrow(() -> new NoSuchElementException("No such tag"));
-        tagModel.setLastUpdateDate(LocalDateTime.now());
-        tagModel.setName(updateRequest.getName());
+        if (updateRequest.getName() != null) tagModel.setName(updateRequest.getName());
 
-        Set<NewsModel> newsModelSet = new HashSet<>();
-        for (Long newsId : updateRequest.getNewsId()) {
-            newsModelSet.add(newsRepository.findById(newsId).orElseThrow(() -> new NoSuchElementException("No such news")));
+        if (updateRequest.getNewsId() != null) {
+            Set<NewsModel> newsModelSet = new HashSet<>();
+            for (Long newsId : updateRequest.getNewsId()) {
+                newsModelSet.add(newsRepository.findById(newsId).orElseThrow(() -> new NoSuchElementException("No such news")));
+            }
+            tagModel.setNews(newsModelSet);
         }
-        tagModel.setNews(newsModelSet);
 
         return TagMapper.INSTANCE.tagToTagDTO(repository.save(tagModel));
     }

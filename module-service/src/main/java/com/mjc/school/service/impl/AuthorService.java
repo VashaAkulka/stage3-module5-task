@@ -5,6 +5,7 @@ import com.mjc.school.repository.model.AuthorModel;
 import com.mjc.school.service.BaseExtendService;
 import com.mjc.school.service.dto.AuthorDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
+import com.mjc.school.service.exception.ValidationException;
 import com.mjc.school.service.mapper.AuthorMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,11 +37,11 @@ public class AuthorService implements BaseExtendService<AuthorDTO, Long> {
     }
 
     @Override
-    public AuthorDTO create(AuthorDTO createRequest) {
+    public AuthorDTO create(AuthorDTO createRequest) throws ValidationException {
         AuthorModel authorModel = new AuthorModel();
+        if (createRequest.getName() == null) throw new ValidationException("The fields should not be empty");
+
         authorModel.setName(createRequest.getName());
-        authorModel.setCreateDate(LocalDateTime.now());
-        authorModel.setLastUpdateDate(LocalDateTime.now());
         authorModel.setNews(new HashSet<>());
 
         return AuthorMapper.INSTANCE.authorToAuthorDto(repository.save(authorModel));
@@ -49,8 +50,7 @@ public class AuthorService implements BaseExtendService<AuthorDTO, Long> {
     @Override
     public AuthorDTO update(AuthorDTO updateRequest, Long id) throws NoSuchElementException {
         AuthorModel authorModel = repository.findById(id).orElseThrow(() -> new NoSuchElementException("No such author"));
-        authorModel.setName(updateRequest.getName());
-        authorModel.setLastUpdateDate(LocalDateTime.now());
+        if (updateRequest.getName() != null) authorModel.setName(updateRequest.getName());
 
         return AuthorMapper.INSTANCE.authorToAuthorDto(repository.save(authorModel));
     }

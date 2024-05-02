@@ -6,6 +6,7 @@ import com.mjc.school.repository.model.CommentModel;
 import com.mjc.school.service.BaseExtendService;
 import com.mjc.school.service.dto.CommentDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
+import com.mjc.school.service.exception.ValidationException;
 import com.mjc.school.service.mapper.CommentMapper;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -40,8 +41,10 @@ public class CommentService implements BaseExtendService<CommentDTO, Long> {
     }
 
     @Override
-    public CommentDTO create(CommentDTO createRequest) throws NoSuchElementException {
+    public CommentDTO create(CommentDTO createRequest) throws NoSuchElementException, ValidationException {
         CommentModel commentModel = new CommentModel();
+        if (createRequest.getNewsId() == null || createRequest.getContent() == null) throw new ValidationException("The fields should not be empty");
+
         commentModel.setCreateDate(LocalDateTime.now());
         commentModel.setLastUpdateDate(LocalDateTime.now());
         commentModel.setContent(createRequest.getContent());
@@ -54,9 +57,10 @@ public class CommentService implements BaseExtendService<CommentDTO, Long> {
     public CommentDTO update(CommentDTO updateRequest, Long id) throws NoSuchElementException {
         CommentModel commentModel = repository.findById(id).orElseThrow(() -> new NoSuchElementException("No such comment"));
         commentModel.setLastUpdateDate(LocalDateTime.now());
-        commentModel.setContent(updateRequest.getContent());
+        if (updateRequest.getContent() != null) commentModel.setContent(updateRequest.getContent());
 
-        commentModel.setNews(newsRepository.findById(updateRequest.getNewsId()).orElseThrow(() -> new NoSuchElementException("No such news")));
+        if (updateRequest.getNewsId() != null)
+            commentModel.setNews(newsRepository.findById(updateRequest.getNewsId()).orElseThrow(() -> new NoSuchElementException("No such news")));
         return CommentMapper.INSTANCE.commentToCommentDTO(repository.save(commentModel));
     }
 

@@ -6,9 +6,7 @@ import lombok.Data;
 
 @Data
 public class CommentDTO {
-    @NotNull
     @Size(min = 5, max = 30)
     private String content;
-    @NotNull
     private Long newsId;
 }
