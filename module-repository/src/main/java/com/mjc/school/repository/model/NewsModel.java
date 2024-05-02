@@ -13,7 +13,7 @@ import java.util.Set;
 
 
 @Data
-@Table(name = "news")
+@Table(name = "tblNews")
 @Entity
 public class NewsModel implements BaseEntity<Long>{
 
@@ -31,7 +31,7 @@ public class NewsModel implements BaseEntity<Long>{
     private AuthorModel author;
 
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
-    @JoinTable(name = "tag_news",
+    @JoinTable(name = "tblNewsTag",
     joinColumns = @JoinColumn(name = "newId"),
     inverseJoinColumns = @JoinColumn(name = "tagId"))
     private Set<TagModel> tags = new HashSet<>();

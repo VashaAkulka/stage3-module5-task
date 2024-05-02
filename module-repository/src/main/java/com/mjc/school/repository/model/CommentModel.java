@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Table(name = "comments")
+@Table(name = "tblComment")
 @Entity
 public class CommentModel implements BaseEntity<Long>{
     @Id

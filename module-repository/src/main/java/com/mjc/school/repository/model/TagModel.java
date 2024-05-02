@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Table(name = "tags")
+@Table(name = "tblTag")
 @Entity
 public class TagModel implements BaseEntity<Long> {
 
@@ -17,8 +17,6 @@ public class TagModel implements BaseEntity<Long> {
     private Long id;
 
     private String name;
-    private LocalDateTime createDate;
-    private LocalDateTime lastUpdateDate;
 
     @ManyToMany(mappedBy = "tags")
     private Set<NewsModel> news = new HashSet<>();

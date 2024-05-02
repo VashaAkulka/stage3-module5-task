@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Table(name = "authors")
+@Table(name = "tblAuthor")
 @Entity
 public class AuthorModel implements BaseEntity<Long> {
 
@@ -16,8 +16,6 @@ public class AuthorModel implements BaseEntity<Long> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
-    private LocalDateTime createDate;
-    private LocalDateTime lastUpdateDate;
 
     @OneToMany(mappedBy = "author")
     private Set<NewsModel> news = new HashSet<>();

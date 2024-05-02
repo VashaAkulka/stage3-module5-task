@@ -3,6 +3,7 @@ package com.mjc.school.service.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ public class NewsDTO {
 
     @NotNull
     @Size(min = 5, max = 30)
+    @UniqueElements
     String title;
 
     @NotNull
