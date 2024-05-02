@@ -7,8 +7,10 @@ import com.mjc.school.repository.impl.TagRepository;
 import com.mjc.school.repository.model.AuthorModel;
 import com.mjc.school.repository.model.NewsModel;
 import com.mjc.school.repository.model.TagModel;
+import com.mjc.school.service.BaseNewsService;
 import com.mjc.school.service.BaseService;
 import com.mjc.school.service.dto.NewsDTO;
+import com.mjc.school.service.dto.ParameterDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
 import com.mjc.school.service.mapper.NewsMapper;
@@ -26,7 +28,7 @@ import java.util.Set;
 
 @Service
 @AllArgsConstructor
-public class NewsService implements BaseService<NewsDTO, Long> {
+public class NewsService implements BaseNewsService<NewsDTO, Long> {
     private NewsRepository repository;
     private TagRepository tagRepository;
     private AuthorRepository authorRepository;
@@ -96,5 +98,16 @@ public class NewsService implements BaseService<NewsDTO, Long> {
             repository.deleteById(id);
             return true;
         }
+    }
+
+    @Override
+    public List<NewsDTO> readByParameters(ParameterDTO parameters) {
+        Set<NewsModel> newsModelSet = new HashSet<>();
+        if (parameters.getTagId() != null) newsModelSet.addAll(repository.findNewsByTagId(parameters.getTagId()));
+        if (parameters.getTagName() != null) newsModelSet.addAll(repository.findNewsByTagName(parameters.getTagName()));
+        if (parameters.getAuthorName() != null) newsModelSet.addAll(repository.findNewsByAuthorName(parameters.getAuthorName()));
+        if (parameters.getTitle() != null) newsModelSet.addAll(repository.findNewsByPartOfTitle(parameters.getTitle()));
+        if (parameters.getContent() != null) newsModelSet.addAll(repository.findNewsByPartOfContent(parameters.getContent()));
+        return NewsMapper.INSTANCE.newsListToNewsDtoList(new ArrayList<>(newsModelSet));
     }
 }

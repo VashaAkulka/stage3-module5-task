@@ -4,6 +4,7 @@ import com.mjc.school.controller.BaseExtendController;
 import com.mjc.school.service.BaseExtendService;
 import com.mjc.school.service.dto.CommentDTO;
 import com.mjc.school.service.dto.NewsDTO;
+import com.mjc.school.service.dto.PageDTO;
 import com.mjc.school.service.dto.TagDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
@@ -24,12 +25,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/tags")
 public class TagController implements BaseExtendController<TagDTO, Long> {
     private BaseExtendService<TagDTO, Long> service;
 
@@ -42,8 +43,8 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/news/{id}")
-    public ResponseEntity<List<TagDTO>> readByNewsId(@PathVariable("id") Long id) throws NoSuchElementException {
+    @GetMapping("/news/{newsId}/tags")
+    public ResponseEntity<List<TagDTO>> readByNewsId(@PathVariable("newsId") Long id) throws NoSuchElementException {
         List<TagDTO> tagDTOList = service.readByNewsId(id);
         if (tagDTOList.isEmpty()) return ResponseEntity.noContent().build();
         return ResponseEntity.ok().body(tagDTOList);
@@ -64,39 +65,37 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping
-    public ResponseEntity<PagedModel<TagDTO>> readAll(@RequestParam(value = "page", required = false) Integer page,
-                                                       @RequestParam(value = "sort", required = false) String sort,
-                                                       @RequestParam(value = "limit", required = false) Integer limit) {
+    @GetMapping("/tag/all")
+    public ResponseEntity<PagedModel<TagDTO>> readAll(@ModelAttribute PageDTO pages) {
 
         List<TagDTO> tagDTOList = service.readAll();
         if (tagDTOList.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            if (page == null || sort == null || limit == null) {
-                return ResponseEntity.ok(PagedModel.of(tagDTOList, new PagedModel.PageMetadata(0, 0, tagDTOList.size())));
+            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null || pages.getSortBy() == null) {
+                return ResponseEntity.ok(PagedModel.of(tagDTOList, new PagedModel.PageMetadata(0, 1, tagDTOList.size())));
             }
 
-            int startIndex = (page - 1) * limit;
-            int endIndex = Math.min(startIndex + limit, tagDTOList.size());
+            int startIndex = (pages.getPage() - 1) * pages.getLimit();
+            int endIndex = Math.min(startIndex + pages.getLimit(), tagDTOList.size());
             List<TagDTO> paginatedTagDTOList = tagDTOList.subList(startIndex, endIndex);
 
-            if (sort.equals("asc")) {
+            if (pages.getSort().equals("asc")) {
                 paginatedTagDTOList.sort(Comparator.comparing(TagDTO::getName));
-            } else if (sort.equals("desc")) {
+            } else if (pages.getSort().equals("desc")) {
                 paginatedTagDTOList.sort(Comparator.comparing(TagDTO::getName).reversed());
             }
 
-            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(limit, page, tagDTOList.size());
+            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), tagDTOList.size());
             PagedModel<TagDTO> pagedModel = PagedModel.of(paginatedTagDTOList, metadata);
 
             if (endIndex < tagDTOList.size()) {
-                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s", (page + 1), limit, sort);
+                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
                 pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
             }
 
             if (startIndex > 0) {
-                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s", (page - 1), limit, sort);
+                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
                 pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
             }
 
@@ -118,7 +117,7 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/{id}")
+    @GetMapping("/tag/{id}")
     public ResponseEntity<TagDTO> readById(@PathVariable("id") Long id) throws NoSuchElementException {
         return ResponseEntity.ok(service.readById(id));
     }
@@ -138,7 +137,7 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @PostMapping
+    @PostMapping("/tag")
     public ResponseEntity<TagDTO> create(@RequestBody @Valid TagDTO createRequest,
                                          BindingResult bindingResult) throws NoSuchElementException, ValidationException {
         if (bindingResult.hasErrors()) {
@@ -168,7 +167,7 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @PatchMapping("/{id}")
+    @PatchMapping("/tag/{id}")
     public ResponseEntity<TagDTO> update(@RequestBody @Valid TagDTO updateRequest,
                                          @PathVariable("id") Long id,
                                          BindingResult bindingResult) throws ValidationException, NoSuchElementException {
@@ -195,7 +194,7 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/tag/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable Long id) throws NoSuchElementException {
         if (!service.deleteById(id))

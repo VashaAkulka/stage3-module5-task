@@ -1,5 +1,6 @@
 package com.mjc.school.controller;
 
+import com.mjc.school.service.dto.PageDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
 import org.springframework.hateoas.PagedModel;
@@ -7,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 
 public interface BaseController<R, K> {
-    ResponseEntity<PagedModel<R>> readAll(Integer page, String sort, Integer limit);
+    ResponseEntity<PagedModel<R>> readAll(PageDTO pages);
 
     ResponseEntity<R> readById(K id) throws NoSuchElementException;
 

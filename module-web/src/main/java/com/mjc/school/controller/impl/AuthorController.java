@@ -4,6 +4,8 @@ import com.mjc.school.controller.BaseExtendController;
 import com.mjc.school.service.BaseExtendService;
 import com.mjc.school.service.dto.AuthorDTO;
 import com.mjc.school.service.dto.CommentDTO;
+import com.mjc.school.service.dto.PageDTO;
+import com.mjc.school.service.dto.TagDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
 import io.swagger.annotations.Api;
@@ -29,7 +31,6 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/authors")
 @Api(produces = "application/json", value = "Operations for creating, updating, retrieving and deleting authors in the application")
 public class AuthorController implements BaseExtendController<AuthorDTO, Long> {
     private BaseExtendService<AuthorDTO, Long> service;
@@ -43,8 +44,8 @@ public class AuthorController implements BaseExtendController<AuthorDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/news/{id}")
-    public ResponseEntity<List<AuthorDTO>> readByNewsId(@PathVariable("id") Long id) throws NoSuchElementException {
+    @GetMapping("/news/{newsId}/authors")
+    public ResponseEntity<List<AuthorDTO>> readByNewsId(@PathVariable("newsId") Long id) throws NoSuchElementException {
         List<AuthorDTO> authorDTOList = service.readByNewsId(id);
         if (authorDTOList.isEmpty()) return ResponseEntity.noContent().build();
         return ResponseEntity.ok().body(authorDTOList);
@@ -63,39 +64,37 @@ public class AuthorController implements BaseExtendController<AuthorDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping
-    public ResponseEntity<PagedModel<AuthorDTO>> readAll(@RequestParam(value = "page", required = false) Integer page,
-                                                          @RequestParam(value = "sort", required = false) String sort,
-                                                          @RequestParam(value = "limit", required = false) Integer limit) {
+    @GetMapping("/author/all")
+    public ResponseEntity<PagedModel<AuthorDTO>> readAll(@ModelAttribute PageDTO pages) {
 
         List<AuthorDTO> authorDTOList = service.readAll();
         if (authorDTOList.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            if (page == null || sort == null || limit == null) {
-                return ResponseEntity.ok(PagedModel.of(authorDTOList, new PagedModel.PageMetadata(0, 0, authorDTOList.size())));
+            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null || pages.getSortBy() == null) {
+                return ResponseEntity.ok(PagedModel.of(authorDTOList, new PagedModel.PageMetadata(0, 1, authorDTOList.size())));
             }
 
-            int startIndex = (page - 1) * limit;
-            int endIndex = Math.min(startIndex + limit, authorDTOList.size());
+            int startIndex = (pages.getPage() - 1) * pages.getLimit();
+            int endIndex = Math.min(startIndex + pages.getLimit(), authorDTOList.size());
             List<AuthorDTO> paginatedAuthorDTOList = authorDTOList.subList(startIndex, endIndex);
 
-            if (sort.equals("asc")) {
+            if (pages.getSort().equals("asc")) {
                 paginatedAuthorDTOList.sort(Comparator.comparing(AuthorDTO::getName));
-            } else if (sort.equals("desc")) {
+            } else if (pages.getSort().equals("desc")) {
                 paginatedAuthorDTOList.sort(Comparator.comparing(AuthorDTO::getName).reversed());
             }
 
-            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(limit, page, authorDTOList.size());
+            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), authorDTOList.size());
             PagedModel<AuthorDTO> pagedModel = PagedModel.of(paginatedAuthorDTOList, metadata);
 
             if (endIndex < authorDTOList.size()) {
-                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s", (page + 1), limit, sort);
+                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
                 pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
             }
 
             if (startIndex > 0) {
-                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s", (page - 1), limit, sort);
+                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
                 pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
             }
 
@@ -115,7 +114,7 @@ public class AuthorController implements BaseExtendController<AuthorDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/{id}")
+    @GetMapping("/author/{id}")
     public ResponseEntity<AuthorDTO> readById(@PathVariable("id") Long id) throws NoSuchElementException {
         return ResponseEntity.ok(service.readById(id));
     }
@@ -133,7 +132,7 @@ public class AuthorController implements BaseExtendController<AuthorDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @PostMapping
+    @PostMapping("/author")
     public ResponseEntity<AuthorDTO> create(@RequestBody @Valid AuthorDTO createRequest,
                             BindingResult bindingResult) throws NoSuchElementException, ValidationException {
         if (bindingResult.hasErrors()) {
@@ -161,7 +160,7 @@ public class AuthorController implements BaseExtendController<AuthorDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @PatchMapping("/{id}")
+    @PatchMapping("/author/{id}")
     public ResponseEntity<AuthorDTO> update(@RequestBody @Valid AuthorDTO updateRequest,
                                             @PathVariable("id") Long id,
                                             BindingResult bindingResult) throws ValidationException, NoSuchElementException {
@@ -188,7 +187,7 @@ public class AuthorController implements BaseExtendController<AuthorDTO, Long> {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/author/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable("id") Long id) throws NoSuchElementException {
         if (!service.deleteById(id))

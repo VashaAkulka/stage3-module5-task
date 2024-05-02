@@ -2,9 +2,7 @@ package com.mjc.school.controller.impl;
 
 import com.mjc.school.controller.BaseExtendController;
 import com.mjc.school.service.BaseExtendService;
-import com.mjc.school.service.dto.AuthorDTO;
-import com.mjc.school.service.dto.CommentDTO;
-import com.mjc.school.service.dto.TagDTO;
+import com.mjc.school.service.dto.*;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
 import io.swagger.annotations.ApiOperation;
@@ -24,12 +22,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/comments")
 public class CommentController implements BaseExtendController<CommentDTO, Long> {
     private BaseExtendService<CommentDTO, Long> service;
 
@@ -42,8 +40,8 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/news/{id}")
-    public ResponseEntity<List<CommentDTO>> readByNewsId(@PathVariable("id") Long id) throws NoSuchElementException {
+    @GetMapping("/news/{newsId}/comments")
+    public ResponseEntity<List<CommentDTO>> readByNewsId(@PathVariable("newsId") Long id) throws NoSuchElementException {
         List<CommentDTO> commentDTOList = service.readByNewsId(id);
         if (commentDTOList.isEmpty()) return ResponseEntity.noContent().build();
         return ResponseEntity.ok().body(commentDTOList);
@@ -62,39 +60,38 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping
-    public ResponseEntity<PagedModel<CommentDTO>> readAll(@RequestParam(value = "page", required = false) Integer page,
-                                                      @RequestParam(value = "sort", required = false) String sort,
-                                                      @RequestParam(value = "limit", required = false) Integer limit) {
+    @GetMapping("/comment/all")
+    public ResponseEntity<PagedModel<CommentDTO>> readAll(@ModelAttribute PageDTO pages) {
 
         List<CommentDTO> commentDTOList = service.readAll();
         if (commentDTOList.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            if (page == null || sort == null || limit == null) {
-                return ResponseEntity.ok(PagedModel.of(commentDTOList, new PagedModel.PageMetadata(0, 0, commentDTOList.size())));
+            if (pages.getPage() == null || pages.getSort() == null || pages.getLimit() == null || pages.getSortBy() == null) {
+                return ResponseEntity.ok(PagedModel.of(commentDTOList, new PagedModel.PageMetadata(0, 1, commentDTOList.size())));
             }
 
-            int startIndex = (page - 1) * limit;
-            int endIndex = Math.min(startIndex + limit, commentDTOList.size());
+            int startIndex = (pages.getPage() - 1) * pages.getLimit();
+            int endIndex = Math.min(startIndex + pages.getLimit(), commentDTOList.size());
             List<CommentDTO> paginatedCommentDTOList = commentDTOList.subList(startIndex, endIndex);
 
-            if (sort.equals("asc")) {
-                paginatedCommentDTOList.sort(Comparator.comparing(CommentDTO::getContent));
-            } else if (sort.equals("desc")) {
-                paginatedCommentDTOList.sort(Comparator.comparing(CommentDTO::getContent).reversed());
+            if (pages.getSortBy().equals("Created")) {
+                paginatedCommentDTOList.sort(Comparator.comparing(CommentDTO::getCreateDate));
+            } else if (pages.getSortBy().equals("Modified")) {
+                paginatedCommentDTOList.sort(Comparator.comparing(CommentDTO::getLastUpdateDate));
             }
+            if (pages.getSort().equals("desc")) Collections.reverse(paginatedCommentDTOList);
 
-            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(limit, page, commentDTOList.size());
+            PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), commentDTOList.size());
             PagedModel<CommentDTO> pagedModel = PagedModel.of(paginatedCommentDTOList, metadata);
 
             if (endIndex < commentDTOList.size()) {
-                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s", (page + 1), limit, sort);
+                String nextLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() + 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
                 pagedModel.add(Link.of(nextLink, LinkRelation.of("next")));
             }
 
             if (startIndex > 0) {
-                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s", (page - 1), limit, sort);
+                String previousLink = String.format("/news?page=%d&limit=%d&sort=%s&sortBy=%s", (pages.getPage() - 1), pages.getLimit(), pages.getSort(), pages.getSortBy());
                 pagedModel.add(Link.of(previousLink, LinkRelation.of("previous")));
             }
 
@@ -116,7 +113,7 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @GetMapping("/{id}")
+    @GetMapping("/comment/{id}")
     public ResponseEntity<CommentDTO> readById(@PathVariable("id") Long id) throws NoSuchElementException {
         return ResponseEntity.ok(service.readById(id));
     }
@@ -136,7 +133,7 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @PostMapping
+    @PostMapping("/comment")
     public ResponseEntity<CommentDTO> create(@RequestBody @Valid CommentDTO createRequest,
                                              BindingResult bindingResult) throws NoSuchElementException, ValidationException {
 
@@ -167,7 +164,7 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @PatchMapping("/{id}")
+    @PatchMapping("/comment/{id}")
     public ResponseEntity<CommentDTO> update(@RequestBody @Valid CommentDTO updateRequest,
                                                     @PathVariable("id") Long id,
                                                     BindingResult bindingResult) throws ValidationException, NoSuchElementException {
@@ -195,7 +192,7 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
             @ApiResponse(code = 500, message = "Application failed to process the request")
     }
     )
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/comment/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable("id") Long id) throws NoSuchElementException {
         if (!service.deleteById(id))
