@@ -9,6 +9,7 @@ import java.util.Set;
 
 @Data
 public class AuthorDTO {
+    private Long id;
     @Size(min = 3, max = 15)
     @UniqueElements
     private String name;

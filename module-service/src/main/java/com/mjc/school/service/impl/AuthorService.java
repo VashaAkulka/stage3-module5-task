@@ -2,6 +2,7 @@ package com.mjc.school.service.impl;
 
 import com.mjc.school.repository.impl.AuthorRepository;
 import com.mjc.school.repository.model.AuthorModel;
+import com.mjc.school.service.BaseAuthorAndTagService;
 import com.mjc.school.service.BaseExtendService;
 import com.mjc.school.service.dto.AuthorDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
@@ -16,14 +17,12 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class AuthorService implements BaseExtendService<AuthorDTO, Long> {
+public class AuthorService implements BaseAuthorAndTagService<AuthorDTO, Long> {
     private AuthorRepository repository;
 
     @Override
-    public List<AuthorDTO> readByNewsId(Long id) throws NoSuchElementException {
-        List<AuthorModel> authorModel = repository.findAuthorByNewsId(id);
-        if (authorModel == null || authorModel.isEmpty()) throw new NoSuchElementException("No such author");
-        else return AuthorMapper.INSTANCE.authorListToAuthorDtoList(authorModel);
+    public List<AuthorDTO> readByNewsId(Long id) {
+        return AuthorMapper.INSTANCE.authorListToAuthorDtoList(repository.findAuthorByNewsId(id));
     }
 
     @Override
@@ -63,5 +62,15 @@ public class AuthorService implements BaseExtendService<AuthorDTO, Long> {
             repository.deleteById(id);
             return true;
         }
+    }
+
+    @Override
+    public List<AuthorDTO> readByPartName(String name) {
+        return AuthorMapper.INSTANCE.authorListToAuthorDtoList(repository.findAuthorByPartName(name));
+    }
+
+    @Override
+    public Long getCountById(Long id) {
+        return repository.countNewsByAuthorId(id);
     }
 }

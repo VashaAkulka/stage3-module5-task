@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class CommentDTO {
+    private Long id;
+
     @Size(min = 5, max = 30)
     private String content;
     private Long newsId;

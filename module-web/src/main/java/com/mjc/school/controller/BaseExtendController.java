@@ -6,5 +6,5 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface BaseExtendController<R, K> extends BaseController<R, K> {
-    ResponseEntity<List<R>> readByNewsId(K id) throws NoSuchElementException;
+    ResponseEntity<List<R>> readByNewsId(K id);
 }

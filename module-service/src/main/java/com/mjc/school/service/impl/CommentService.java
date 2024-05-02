@@ -24,10 +24,8 @@ public class CommentService implements BaseExtendService<CommentDTO, Long> {
     private NewsRepository newsRepository;
 
     @Override
-    public List<CommentDTO> readByNewsId(Long id) throws NoSuchElementException {
-        List<CommentModel> commentModel = repository.findCommentByNewsId(id);
-        if (commentModel == null || commentModel.isEmpty()) throw new NoSuchElementException("No such comment");
-        else return CommentMapper.INSTANCE.commentListToCommentDTOList(commentModel);
+    public List<CommentDTO> readByNewsId(Long id) {
+        return CommentMapper.INSTANCE.commentListToCommentDTOList(repository.findCommentByNewsId(id));
     }
 
     @Override

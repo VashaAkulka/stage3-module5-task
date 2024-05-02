@@ -3,7 +3,7 @@ package com.mjc.school.service.dto;
 import lombok.Data;
 
 @Data
-public class ParameterDTO {
+public class SearchParameterForNewsDTO {
     private Long tagId;
     private String tagName;
     private String authorName;

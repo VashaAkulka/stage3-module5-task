@@ -8,16 +8,12 @@ import com.mjc.school.repository.model.AuthorModel;
 import com.mjc.school.repository.model.NewsModel;
 import com.mjc.school.repository.model.TagModel;
 import com.mjc.school.service.BaseNewsService;
-import com.mjc.school.service.BaseService;
 import com.mjc.school.service.dto.NewsDTO;
-import com.mjc.school.service.dto.ParameterDTO;
+import com.mjc.school.service.dto.SearchParameterForNewsDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
 import com.mjc.school.service.mapper.NewsMapper;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -101,7 +97,7 @@ public class NewsService implements BaseNewsService<NewsDTO, Long> {
     }
 
     @Override
-    public List<NewsDTO> readByParameters(ParameterDTO parameters) {
+    public List<NewsDTO> readByParameters(SearchParameterForNewsDTO parameters) {
         Set<NewsModel> newsModelSet = new HashSet<>();
         if (parameters.getTagId() != null) newsModelSet.addAll(repository.findNewsByTagId(parameters.getTagId()));
         if (parameters.getTagName() != null) newsModelSet.addAll(repository.findNewsByTagName(parameters.getTagName()));

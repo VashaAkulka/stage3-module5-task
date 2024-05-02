@@ -10,6 +10,8 @@ import java.util.Set;
 
 @Data
 public class NewsDTO {
+    private Long id;
+
     private Long authorId;
 
     @Size(min = 5, max = 30)

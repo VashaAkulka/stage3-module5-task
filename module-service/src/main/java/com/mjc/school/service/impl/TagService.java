@@ -4,10 +4,12 @@ import com.mjc.school.repository.impl.NewsRepository;
 import com.mjc.school.repository.impl.TagRepository;
 import com.mjc.school.repository.model.NewsModel;
 import com.mjc.school.repository.model.TagModel;
+import com.mjc.school.service.BaseAuthorAndTagService;
 import com.mjc.school.service.BaseExtendService;
 import com.mjc.school.service.dto.TagDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
+import com.mjc.school.service.mapper.AuthorMapper;
 import com.mjc.school.service.mapper.TagMapper;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -22,15 +24,13 @@ import java.util.Set;
 
 @Service
 @AllArgsConstructor
-public class TagService implements BaseExtendService<TagDTO, Long> {
+public class TagService implements BaseAuthorAndTagService<TagDTO, Long> {
     private TagRepository repository;
     private NewsRepository newsRepository;
 
     @Override
-    public List<TagDTO> readByNewsId(Long id) throws NoSuchElementException {
-        List<TagModel> tagModel = repository.findTagByNewsId(id);
-        if (tagModel == null || tagModel.isEmpty()) throw new NoSuchElementException("No such tag");
-        else return TagMapper.INSTANCE.tagListToTagDTOList(tagModel);
+    public List<TagDTO> readByNewsId(Long id) {
+        return TagMapper.INSTANCE.tagListToTagDTOList(repository.findTagByNewsId(id));
     }
 
     @Override
@@ -83,5 +83,15 @@ public class TagService implements BaseExtendService<TagDTO, Long> {
             repository.deleteById(id);
             return true;
         }
+    }
+
+    @Override
+    public List<TagDTO> readByPartName(String name) {
+        return TagMapper.INSTANCE.tagListToTagDTOList(repository.findTagByPartName(name));
+    }
+
+    @Override
+    public Long getCountById(Long id) {
+        return repository.countNewsByTagId(id);
     }
 }

@@ -3,10 +3,11 @@ package com.mjc.school.controller.impl;
 import com.mjc.school.controller.BaseNewsController;
 import com.mjc.school.service.BaseNewsService;
 import com.mjc.school.service.dto.NewsDTO;
-import com.mjc.school.service.dto.PageDTO;
-import com.mjc.school.service.dto.ParameterDTO;
+import com.mjc.school.service.dto.PageInfoDTO;
+import com.mjc.school.service.dto.SearchParameterForNewsDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -27,6 +28,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@Api(produces = "application/json", value = "Operations for creating, updating, retrieving and deleting news in the application")
 public class NewsController implements BaseNewsController<NewsDTO, Long> {
     private BaseNewsService<NewsDTO, Long> service;
 
@@ -40,7 +42,7 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
     }
     )
     @GetMapping("/new/all")
-    public ResponseEntity<PagedModel<NewsDTO>> readAll(@ModelAttribute PageDTO pages) {
+    public ResponseEntity<PagedModel<NewsDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
 
         List<NewsDTO> newsDTOList = service.readAll();
         if (newsDTOList.isEmpty()) {
@@ -91,7 +93,7 @@ public class NewsController implements BaseNewsController<NewsDTO, Long> {
     }
     )
     @GetMapping("/new/search")
-    public ResponseEntity<List<NewsDTO>> readByParameters(@ModelAttribute ParameterDTO parameters) {
+    public ResponseEntity<List<NewsDTO>> readByParameters(@ModelAttribute SearchParameterForNewsDTO parameters) {
         List<NewsDTO> newsDTOList = service.readByParameters(parameters);
         if (newsDTOList.isEmpty())
             return ResponseEntity

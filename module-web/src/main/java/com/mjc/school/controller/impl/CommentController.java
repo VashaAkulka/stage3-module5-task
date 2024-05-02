@@ -5,13 +5,12 @@ import com.mjc.school.service.BaseExtendService;
 import com.mjc.school.service.dto.*;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
@@ -20,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,6 +26,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@Api(produces = "application/json", value = "Operations for creating, updating, retrieving and deleting comment in the application")
 public class CommentController implements BaseExtendController<CommentDTO, Long> {
     private BaseExtendService<CommentDTO, Long> service;
 
@@ -41,7 +40,7 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
     }
     )
     @GetMapping("/news/{newsId}/comments")
-    public ResponseEntity<List<CommentDTO>> readByNewsId(@PathVariable("newsId") Long id) throws NoSuchElementException {
+    public ResponseEntity<List<CommentDTO>> readByNewsId(@PathVariable("newsId") Long id) {
         List<CommentDTO> commentDTOList = service.readByNewsId(id);
         if (commentDTOList.isEmpty()) return ResponseEntity.noContent().build();
         return ResponseEntity.ok().body(commentDTOList);
@@ -61,7 +60,7 @@ public class CommentController implements BaseExtendController<CommentDTO, Long>
     }
     )
     @GetMapping("/comment/all")
-    public ResponseEntity<PagedModel<CommentDTO>> readAll(@ModelAttribute PageDTO pages) {
+    public ResponseEntity<PagedModel<CommentDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
 
         List<CommentDTO> commentDTOList = service.readAll();
         if (commentDTOList.isEmpty()) {

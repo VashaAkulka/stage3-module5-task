@@ -12,4 +12,10 @@ import java.util.List;
 public interface TagRepository extends JpaRepository<TagModel, Long> {
     @Query("SELECT t FROM TagModel t join t.news n where n.id = :newsId")
     List<TagModel> findTagByNewsId(@Param("newsId") Long newsId);
+
+    @Query("SELECT t FROM TagModel t where t.name LIKE %:name%")
+    List<TagModel> findTagByPartName(@Param("name") String name);
+
+    @Query("SELECT COUNT(n.id) FROM TagModel t JOIN t.news n WHERE t.id = :tagId")
+    Long countNewsByTagId(@Param("tagId") Long tagId);
 }

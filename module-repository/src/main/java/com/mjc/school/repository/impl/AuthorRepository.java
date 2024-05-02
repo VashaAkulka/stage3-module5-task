@@ -12,4 +12,10 @@ import java.util.List;
 public interface AuthorRepository extends JpaRepository<AuthorModel, Long> {
     @Query("SELECT a FROM AuthorModel a join a.news n where n.id = :newsId")
     List<AuthorModel> findAuthorByNewsId(@Param("newsId") Long newsId);
+
+    @Query("SELECT a FROM AuthorModel a where a.name LIKE %:name%")
+    List<AuthorModel> findAuthorByPartName(@Param("name") String name);
+
+    @Query("SELECT COUNT(n.id) FROM AuthorModel a JOIN a.news n WHERE a.id = :authorId")
+    Long countNewsByAuthorId(@Param("authorId") Long authorId);
 }

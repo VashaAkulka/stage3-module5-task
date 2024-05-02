@@ -1,20 +1,19 @@
 package com.mjc.school.controller.impl;
 
+import com.mjc.school.controller.BaseAuthorAndTagController;
 import com.mjc.school.controller.BaseExtendController;
+import com.mjc.school.service.BaseAuthorAndTagService;
 import com.mjc.school.service.BaseExtendService;
-import com.mjc.school.service.dto.CommentDTO;
-import com.mjc.school.service.dto.NewsDTO;
-import com.mjc.school.service.dto.PageDTO;
+import com.mjc.school.service.dto.PageInfoDTO;
 import com.mjc.school.service.dto.TagDTO;
 import com.mjc.school.service.exception.NoSuchElementException;
 import com.mjc.school.service.exception.ValidationException;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
@@ -23,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,11 +29,12 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-public class TagController implements BaseExtendController<TagDTO, Long> {
-    private BaseExtendService<TagDTO, Long> service;
+@Api(produces = "application/json", value = "Operations for creating, updating, retrieving and deleting tag in the application")
+public class TagController implements BaseAuthorAndTagController<TagDTO, Long> {
+    private BaseAuthorAndTagService<TagDTO, Long> service;
 
     @Override
-    @ApiOperation("Read comment by news id")
+    @ApiOperation("Read tags by news id")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully read the tags"),
             @ApiResponse(code = 204, message = "No tags found"),
@@ -44,7 +43,7 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
     }
     )
     @GetMapping("/news/{newsId}/tags")
-    public ResponseEntity<List<TagDTO>> readByNewsId(@PathVariable("newsId") Long id) throws NoSuchElementException {
+    public ResponseEntity<List<TagDTO>> readByNewsId(@PathVariable("newsId") Long id) {
         List<TagDTO> tagDTOList = service.readByNewsId(id);
         if (tagDTOList.isEmpty()) return ResponseEntity.noContent().build();
         return ResponseEntity.ok().body(tagDTOList);
@@ -52,7 +51,21 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
 
 
 
-
+    @Override
+    @ApiOperation("Read tags by part name")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully read the tags"),
+            @ApiResponse(code = 204, message = "No tags found"),
+            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
+            @ApiResponse(code = 500, message = "Application failed to process the request")
+    }
+    )
+    @GetMapping("/tag/search")
+    public ResponseEntity<List<TagDTO>> readByPartName(String name) {
+        List<TagDTO> tagDTOList = service.readByPartName(name);
+        if (tagDTOList.isEmpty()) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body(tagDTOList);
+    }
 
 
 
@@ -66,7 +79,7 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
     }
     )
     @GetMapping("/tag/all")
-    public ResponseEntity<PagedModel<TagDTO>> readAll(@ModelAttribute PageDTO pages) {
+    public ResponseEntity<PagedModel<TagDTO>> readAll(@ModelAttribute PageInfoDTO pages) {
 
         List<TagDTO> tagDTOList = service.readAll();
         if (tagDTOList.isEmpty()) {
@@ -81,9 +94,10 @@ public class TagController implements BaseExtendController<TagDTO, Long> {
             List<TagDTO> paginatedTagDTOList = tagDTOList.subList(startIndex, endIndex);
 
             if (pages.getSort().equals("asc")) {
-                paginatedTagDTOList.sort(Comparator.comparing(TagDTO::getName));
+                paginatedTagDTOList.sort(Comparator.comparing(tag -> service.getCountById(tag.getId())));
             } else if (pages.getSort().equals("desc")) {
-                paginatedTagDTOList.sort(Comparator.comparing(TagDTO::getName).reversed());
+                paginatedTagDTOList.sort(Comparator.comparing(tag -> service.getCountById(tag.getId())));
+                Collections.reverse(paginatedTagDTOList);
             }
 
             PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(pages.getLimit(), pages.getPage(), tagDTOList.size());
